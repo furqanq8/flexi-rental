@@ -20,6 +20,7 @@ const defaultState = {
 
 const state = loadState();
 let activeRole = 'Admin';
+const formSubmitLabels = {};
 
 function kuwaitNow() {
   return new Date(
@@ -140,8 +141,36 @@ function getFormData(form) {
   return result;
 }
 
+function registerForm(form) {
+  if (!form || !form.id || formSubmitLabels[form.id]) return;
+  const button = form.querySelector('button[type="submit"]');
+  if (button) {
+    formSubmitLabels[form.id] = button.textContent;
+  }
+}
+
+function resetFormState(form) {
+  if (!form) return;
+  delete form.dataset.editingId;
+  const button = form.querySelector('button[type="submit"]');
+  if (button && formSubmitLabels[form.id]) {
+    button.textContent = formSubmitLabels[form.id];
+  }
+}
+
+function beginEditing(form, entityId, submitLabel = 'Save Changes') {
+  if (!form) return;
+  form.dataset.editingId = entityId;
+  const button = form.querySelector('button[type="submit"]');
+  if (button) {
+    button.textContent = submitLabel;
+  }
+}
+
 function clearForm(form) {
+  if (!form) return;
   form.reset();
+  resetFormState(form);
   for (const select of form.querySelectorAll('select[multiple]')) {
     Array.from(select.options).forEach((option) => (option.selected = false));
   }
@@ -149,9 +178,38 @@ function clearForm(form) {
 
 function bindForms() {
   const formUnit = document.getElementById('form-unit');
+  registerForm(formUnit);
   formUnit?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formUnit);
+    const editingId = formUnit.dataset.editingId;
+    if (editingId) {
+      const index = state.units.findIndex((unit) => unit.id === editingId);
+      if (index >= 0) {
+        const existing = state.units[index];
+        const updated = {
+          ...existing,
+          ...data,
+          attachments: data.attachment?.length
+            ? data.attachment
+            : existing.attachments || [],
+          status: data.status || existing.status || 'Available',
+          expiry: data.expiry || null,
+          notes: data.notes || '',
+          rate: Number(data.rate || existing.rate || 0),
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.units[index] = updated;
+        persistState();
+        addAudit(`Unit ${updated.name} updated`);
+        clearForm(formUnit);
+        renderUnits();
+        renderUnitOptions();
+        evaluateAlerts();
+        updateDashboard();
+      }
+      return;
+    }
     const unit = {
       id: crypto.randomUUID(),
       ...data,
@@ -173,9 +231,31 @@ function bindForms() {
   });
 
   const formDriver = document.getElementById('form-driver');
+  registerForm(formDriver);
   formDriver?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formDriver);
+    const editingId = formDriver.dataset.editingId;
+    if (editingId) {
+      const index = state.drivers.findIndex((driver) => driver.id === editingId);
+      if (index >= 0) {
+        const existing = state.drivers[index];
+        const updated = {
+          ...existing,
+          ...data,
+          expiry: data.expiry || null,
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.drivers[index] = updated;
+        persistState();
+        addAudit(`Driver ${updated.name} updated`);
+        clearForm(formDriver);
+        renderDrivers();
+        renderDriverOptions();
+        evaluateAlerts();
+      }
+      return;
+    }
     const driver = {
       id: crypto.randomUUID(),
       ...data,
@@ -192,9 +272,29 @@ function bindForms() {
   });
 
   const formCustomer = document.getElementById('form-customer');
+  registerForm(formCustomer);
   formCustomer?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formCustomer);
+    const editingId = formCustomer.dataset.editingId;
+    if (editingId) {
+      const index = state.customers.findIndex((customer) => customer.id === editingId);
+      if (index >= 0) {
+        const existing = state.customers[index];
+        const updated = {
+          ...existing,
+          ...data,
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.customers[index] = updated;
+        persistState();
+        addAudit(`Customer ${updated.name} updated`);
+        clearForm(formCustomer);
+        renderCustomers();
+        renderCustomerOptions();
+      }
+      return;
+    }
     const customer = {
       id: crypto.randomUUID(),
       ...data,
@@ -209,9 +309,29 @@ function bindForms() {
   });
 
   const formSupplier = document.getElementById('form-supplier');
+  registerForm(formSupplier);
   formSupplier?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formSupplier);
+    const editingId = formSupplier.dataset.editingId;
+    if (editingId) {
+      const index = state.suppliers.findIndex((supplier) => supplier.id === editingId);
+      if (index >= 0) {
+        const existing = state.suppliers[index];
+        const updated = {
+          ...existing,
+          ...data,
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.suppliers[index] = updated;
+        persistState();
+        addAudit(`Supplier ${updated.name} updated`);
+        clearForm(formSupplier);
+        renderSuppliers();
+        renderSupplierOptions();
+      }
+      return;
+    }
     const supplier = {
       id: crypto.randomUUID(),
       ...data,
@@ -226,11 +346,48 @@ function bindForms() {
   });
 
   const formRentalOrder = document.getElementById('form-rental-order');
+  registerForm(formRentalOrder);
   formRentalOrder?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formRentalOrder);
-    if (!validateRentalOrder(data)) {
+    const editingId = formRentalOrder.dataset.editingId;
+    if (!validateRentalOrder(data, editingId)) {
       alert('Unit is already booked for the selected period.');
+      return;
+    }
+    if (editingId) {
+      const index = state.rentalOrders.findIndex((order) => order.id === editingId);
+      if (index >= 0) {
+        const existing = state.rentalOrders[index];
+        const updatedDraft = {
+          ...existing,
+          ...data,
+          start: data.start,
+          end: data.end,
+          billing: Number(data.billing || existing.billing || 0),
+          tax: Number(data.tax || existing.tax || 0),
+          extras: data.extras || [],
+          status: data.status,
+        };
+        const updated = {
+          ...updatedDraft,
+          total: calculateOrderTotal(updatedDraft),
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.rentalOrders[index] = updated;
+        if (updated.status === 'Active') {
+          setUnitStatus(updated.unit, 'On-Rent');
+        } else if (updated.status === 'Closed') {
+          setUnitStatus(updated.unit, 'Available');
+        }
+        persistState();
+        addAudit(`Rental order ${updated.number} updated`);
+        clearForm(formRentalOrder);
+        renderRentalOrders();
+        renderTimesheetOptions();
+        evaluateAlerts();
+        updateDashboard();
+      }
       return;
     }
     const order = {
@@ -258,9 +415,38 @@ function bindForms() {
   });
 
   const formHireOrder = document.getElementById('form-hire-order');
+  registerForm(formHireOrder);
   formHireOrder?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formHireOrder);
+    const editingId = formHireOrder.dataset.editingId;
+    if (editingId) {
+      const index = state.hireOrders.findIndex((order) => order.id === editingId);
+      if (index >= 0) {
+        const existing = state.hireOrders[index];
+        const updatedDraft = {
+          ...existing,
+          ...data,
+          start: data.start,
+          end: data.end,
+          rate: Number(data.rate || existing.rate || 0),
+          status: data.status,
+        };
+        const updated = {
+          ...updatedDraft,
+          total: calculateHireTotal(updatedDraft),
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.hireOrders[index] = updated;
+        persistState();
+        addAudit(`Hire order ${updated.number} updated`);
+        clearForm(formHireOrder);
+        renderHireOrders();
+        renderBillOptions();
+        updateDashboard();
+      }
+      return;
+    }
     const order = {
       id: crypto.randomUUID(),
       ...data,
@@ -281,12 +467,35 @@ function bindForms() {
   });
 
   const formTimesheet = document.getElementById('form-timesheet');
+  registerForm(formTimesheet);
   formTimesheet?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formTimesheet);
     const order = state.rentalOrders.find((o) => o.id === data.order);
     const rateInfo = findRateForOrder(order, data.type);
     const amount = calculateTimesheetAmount(order, data, rateInfo);
+    const editingId = formTimesheet.dataset.editingId;
+    if (editingId) {
+      const index = state.timesheets.findIndex((sheet) => sheet.id === editingId);
+      if (index >= 0) {
+        const existing = state.timesheets[index];
+        const updated = {
+          ...existing,
+          ...data,
+          extras: data.extras || [],
+          quantity: Number(data.quantity || existing.quantity || 0),
+          amount,
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.timesheets[index] = updated;
+        persistState();
+        addAudit(`Timesheet updated for order ${order?.number || data.order}`);
+        clearForm(formTimesheet);
+        renderTimesheets();
+        updateDashboard();
+      }
+      return;
+    }
     const timesheet = {
       id: crypto.randomUUID(),
       ...data,
@@ -304,9 +513,36 @@ function bindForms() {
   });
 
   const formInvoice = document.getElementById('form-invoice');
+  registerForm(formInvoice);
   formInvoice?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formInvoice);
+    const editingId = formInvoice.dataset.editingId;
+    if (editingId) {
+      const index = state.invoices.findIndex((invoice) => invoice.id === editingId);
+      if (index >= 0) {
+        const existing = state.invoices[index];
+        const updatedDraft = {
+          ...existing,
+          ...data,
+          amount: Number(data.amount || existing.amount || 0),
+          tax: Number(data.tax || existing.tax || 0),
+        };
+        const updated = {
+          ...updatedDraft,
+          balance: calculateInvoiceBalance(updatedDraft),
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.invoices[index] = updated;
+        persistState();
+        addAudit(`Invoice ${updated.number} updated`);
+        clearForm(formInvoice);
+        renderInvoices();
+        renderStatementButton();
+        updateDashboard();
+      }
+      return;
+    }
     const invoice = {
       id: crypto.randomUUID(),
       ...data,
@@ -325,9 +561,34 @@ function bindForms() {
   });
 
   const formBill = document.getElementById('form-bill');
+  registerForm(formBill);
   formBill?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formBill);
+    const editingId = formBill.dataset.editingId;
+    if (editingId) {
+      const index = state.bills.findIndex((bill) => bill.id === editingId);
+      if (index >= 0) {
+        const existing = state.bills[index];
+        const updatedDraft = {
+          ...existing,
+          ...data,
+          amount: Number(data.amount || existing.amount || 0),
+        };
+        const updated = {
+          ...updatedDraft,
+          balance: calculateBillBalance(updatedDraft),
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.bills[index] = updated;
+        persistState();
+        addAudit(`Bill ${updated.number} updated`);
+        clearForm(formBill);
+        renderBills();
+        updateDashboard();
+      }
+      return;
+    }
     const bill = {
       id: crypto.randomUUID(),
       ...data,
@@ -344,9 +605,33 @@ function bindForms() {
   });
 
   const formRate = document.getElementById('form-rate');
+  registerForm(formRate);
   formRate?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formRate);
+    const editingId = formRate.dataset.editingId;
+    if (editingId) {
+      const index = state.rates.findIndex((rate) => rate.id === editingId);
+      if (index >= 0) {
+        const existing = state.rates[index];
+        const updated = {
+          ...existing,
+          ...data,
+          rate: Number(data.rate || existing.rate || 0),
+          standby: Number(data.standby || existing.standby || 0),
+          overtime: Number(data.overtime || existing.overtime || 0),
+          mobilization: Number(data.mobilization || existing.mobilization || 0),
+          demobilization: Number(data.demobilization || existing.demobilization || 0),
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.rates[index] = updated;
+        persistState();
+        addAudit(`Rate for ${updated.category} (${updated.type}) updated`);
+        clearForm(formRate);
+        renderRates();
+      }
+      return;
+    }
     const rate = {
       id: crypto.randomUUID(),
       ...data,
@@ -365,9 +650,32 @@ function bindForms() {
   });
 
   const formAttachment = document.getElementById('form-attachment');
+  registerForm(formAttachment);
   formAttachment?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = getFormData(formAttachment);
+    const editingId = formAttachment.dataset.editingId;
+    if (editingId) {
+      const index = state.attachments.findIndex((attachment) => attachment.id === editingId);
+      if (index >= 0) {
+        const existing = state.attachments[index];
+        const updated = {
+          ...existing,
+          ...data,
+          file:
+            data.file?.[0]?.name || existing.file || 'Document',
+          size: data.file?.[0]?.size || existing.size || 0,
+          updatedAt: kuwaitNow().toISOString(),
+        };
+        state.attachments[index] = updated;
+        persistState();
+        addAudit(`Attachment updated for ${updated.reference}`);
+        clearForm(formAttachment);
+        renderAttachments();
+        evaluateAlerts();
+      }
+      return;
+    }
     const attachment = {
       id: crypto.randomUUID(),
       ...data,
@@ -384,10 +692,11 @@ function bindForms() {
   });
 }
 
-function validateRentalOrder(order) {
+function validateRentalOrder(order, ignoreId = null) {
   const start = new Date(order.start);
   const end = new Date(order.end);
   return !state.rentalOrders.some((existing) => {
+    if (existing.id === ignoreId) return false;
     if (existing.unit !== order.unit) return false;
     if (existing.status === 'Closed') return false;
     const existingStart = new Date(existing.start);
@@ -513,7 +822,7 @@ function populateUnitForm(unit) {
   form.rate.value = unit.rate;
   form.notes.value = unit.notes;
   form.expiry.value = unit.expiry ? unit.expiry.split('T')[0] : '';
-  deleteEntity(state.units, unit.id, `Unit ${unit.name} ready for update`, false);
+  beginEditing(form, unit.id, 'Update Unit');
 }
 
 function renderDrivers() {
@@ -545,7 +854,7 @@ function populateDriverForm(driver) {
   form.expiry.value = driver.expiry ? driver.expiry.split('T')[0] : '';
   form.phone.value = driver.phone || '';
   form.notes.value = driver.notes || '';
-  deleteEntity(state.drivers, driver.id, `Driver ${driver.name} ready for update`, false);
+  beginEditing(form, driver.id, 'Update Driver');
 }
 
 function renderCustomers() {
@@ -578,7 +887,7 @@ function populateCustomerForm(customer) {
   form.email.value = customer.email || '';
   form.phone.value = customer.phone || '';
   form.currency.value = customer.currency || 'KWD';
-  deleteEntity(state.customers, customer.id, `Customer ${customer.name} ready for update`, false);
+  beginEditing(form, customer.id, 'Update Customer');
 }
 
 function renderSuppliers() {
@@ -611,7 +920,7 @@ function populateSupplierForm(supplier) {
   form.email.value = supplier.email || '';
   form.phone.value = supplier.phone || '';
   form.currency.value = supplier.currency || 'KWD';
-  deleteEntity(state.suppliers, supplier.id, `Supplier ${supplier.name} ready for update`, false);
+  beginEditing(form, supplier.id, 'Update Supplier');
 }
 
 function renderRentalOrders() {
@@ -674,7 +983,7 @@ function populateRentalOrderForm(order) {
   Array.from(form.extras.options).forEach((opt) => {
     opt.selected = order.extras?.includes(opt.value);
   });
-  deleteEntity(state.rentalOrders, order.id, `Rental order ${order.number} ready for update`, false);
+  beginEditing(form, order.id, 'Update Rental Order');
 }
 
 function renderHireOrders() {
@@ -728,7 +1037,7 @@ function populateHireOrderForm(order) {
   form.status.value = order.status;
   form.currency.value = order.currency;
   form.notes.value = order.notes || '';
-  deleteEntity(state.hireOrders, order.id, `Hire order ${order.number} ready for update`, false);
+  beginEditing(form, order.id, 'Update Hire Order');
 }
 
 function renderTimesheets() {
@@ -767,7 +1076,7 @@ function populateTimesheetForm(sheet) {
     opt.selected = sheet.extras?.includes(opt.value);
   });
   form.notes.value = sheet.notes || '';
-  deleteEntity(state.timesheets, sheet.id, 'Timesheet ready for update', false);
+  beginEditing(form, sheet.id, 'Update Timesheet');
 }
 
 function renderInvoices() {
@@ -810,7 +1119,7 @@ function populateInvoiceForm(invoice) {
   form.tax.value = invoice.tax;
   form.status.value = invoice.status;
   form.receipt.value = invoice.receipt || '';
-  deleteEntity(state.invoices, invoice.id, `Invoice ${invoice.number} ready for update`, false);
+  beginEditing(form, invoice.id, 'Update Invoice');
 }
 
 function updateInvoiceStatus(invoiceId, status) {
@@ -866,7 +1175,7 @@ function populateBillForm(bill) {
   form.amount.value = bill.amount;
   form.status.value = bill.status;
   form.payment.value = bill.payment || '';
-  deleteEntity(state.bills, bill.id, `Bill ${bill.number} ready for update`, false);
+  beginEditing(form, bill.id, 'Update Bill');
 }
 
 function updateBillStatus(billId, status) {
@@ -917,7 +1226,7 @@ function populateRateForm(rate) {
   form.overtime.value = rate.overtime;
   form.mobilization.value = rate.mobilization;
   form.demobilization.value = rate.demobilization;
-  deleteEntity(state.rates, rate.id, 'Rate ready for update', false);
+  beginEditing(form, rate.id, 'Update Rate');
 }
 
 function renderAttachments() {
@@ -949,7 +1258,7 @@ function populateAttachmentForm(item) {
   form.reference.value = item.reference;
   form.description.value = item.description || '';
   form.expiry.value = item.expiry ? item.expiry.split('T')[0] : '';
-  deleteEntity(state.attachments, item.id, 'Attachment ready for update', false);
+  beginEditing(form, item.id, 'Update Attachment');
 }
 
 function renderAudit() {
