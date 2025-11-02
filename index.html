@@ -2,144 +2,700 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlexiRental Operations Console</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
     <script src="https://kit.fontawesome.com/53b611d2e7.js" crossorigin="anonymous"></script>
-    <title>Home|FlexiRental</title>
 </head>
 
 <body>
-    <div class="top-bar">
-        <p>Hurry up!!! Special discount for yearly contract customer</p>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="brand-block">
+                <img src="./images/logo.svg" alt="FlexiRental" onerror="this.style.display='none'" />
+                <div>
+                    <h1>FlexiRental</h1>
+                    <p class="timezone">Asia/Kuwait Time: <span id="kuwait-time"></span></p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <label class="role-select">Role
+                    <select id="role-selector">
+                        <option value="Admin">Admin</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Viewer">Viewer</option>
+                    </select>
+                </label>
+                <button class="primary" id="btn-export-dashboard">Export Dashboard</button>
+                <button class="ghost" id="btn-print-dashboard"><i class="fa-solid fa-print"></i></button>
+            </div>
+        </header>
+
+        <nav class="app-nav" aria-label="Primary">
+            <button class="nav-btn active" data-target="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
+            <button class="nav-btn" data-target="units"><i class="fa-solid fa-truck"></i><span>Units</span></button>
+            <button class="nav-btn" data-target="drivers"><i class="fa-solid fa-id-card"></i><span>Drivers</span></button>
+            <button class="nav-btn" data-target="customers"><i class="fa-solid fa-building-user"></i><span>Customers</span></button>
+            <button class="nav-btn" data-target="suppliers"><i class="fa-solid fa-handshake"></i><span>Suppliers</span></button>
+            <button class="nav-btn" data-target="rental-orders"><i class="fa-solid fa-clipboard-list"></i><span>Rental Orders</span></button>
+            <button class="nav-btn" data-target="hire-orders"><i class="fa-solid fa-truck-loading"></i><span>Supplier Hire</span></button>
+            <button class="nav-btn" data-target="timesheets"><i class="fa-solid fa-calendar-day"></i><span>Timesheets</span></button>
+            <button class="nav-btn" data-target="invoices"><i class="fa-solid fa-file-invoice"></i><span>Customer AR</span></button>
+            <button class="nav-btn" data-target="bills"><i class="fa-solid fa-file-invoice-dollar"></i><span>Supplier AP</span></button>
+            <button class="nav-btn" data-target="rates"><i class="fa-solid fa-tags"></i><span>Rates</span></button>
+            <button class="nav-btn" data-target="documents"><i class="fa-solid fa-paperclip"></i><span>Docs & Attachments</span></button>
+            <button class="nav-btn" data-target="audit"><i class="fa-solid fa-clipboard-check"></i><span>Audit Log</span></button>
+            <button class="nav-btn" data-target="alerts"><i class="fa-solid fa-bell"></i><span>Alerts</span></button>
+        </nav>
+
+        <main class="app-main">
+            <section class="panel active" id="panel-dashboard">
+                <h2>Operations Dashboard</h2>
+                <div class="grid kpi-grid">
+                    <div class="card">
+                        <p>Total Units</p>
+                        <h3 id="kpi-total-units">0</h3>
+                    </div>
+                    <div class="card">
+                        <p>Units On-Rent</p>
+                        <h3 id="kpi-on-rent">0</h3>
+                    </div>
+                    <div class="card">
+                        <p>Utilization</p>
+                        <h3 id="kpi-utilization">0%</h3>
+                    </div>
+                    <div class="card">
+                        <p>Open Rental Orders</p>
+                        <h3 id="kpi-open-rentals">0</h3>
+                    </div>
+                    <div class="card">
+                        <p>Receivables Outstanding</p>
+                        <h3 id="kpi-ar">0 KWD</h3>
+                    </div>
+                    <div class="card">
+                        <p>Payables Outstanding</p>
+                        <h3 id="kpi-ap">0 KWD</h3>
+                    </div>
+                </div>
+
+                <div class="grid two-col">
+                    <div class="card">
+                        <h3>AR Aging</h3>
+                        <table class="data-table" id="table-ar-aging">
+                            <thead>
+                                <tr>
+                                    <th>Bucket</th>
+                                    <th>Amount (KWD)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <h3>AP Aging</h3>
+                        <table class="data-table" id="table-ap-aging">
+                            <thead>
+                                <tr>
+                                    <th>Bucket</th>
+                                    <th>Amount (KWD)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Utilization by Category</h3>
+                    <table class="data-table" id="table-utilization">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Total</th>
+                                <th>On-Rent</th>
+                                <th>Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel" id="panel-units">
+                <div class="panel-header">
+                    <h2>Fleet Units</h2>
+                    <div class="panel-actions">
+                        <button class="secondary" data-export="units">Export</button>
+                    </div>
+                </div>
+                <form class="form" id="form-unit">
+                    <div class="form-row">
+                        <label>Unit Name<input type="text" name="name" required /></label>
+                        <label>Category<input type="text" name="category" required /></label>
+                        <label>Serial<input type="text" name="serial" required /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Status
+                            <select name="status">
+                                <option value="Available">Available</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </label>
+                        <label>Default Rate (KWD)<input type="number" name="rate" min="0" step="0.001" /></label>
+                        <label>Notes<textarea name="notes" rows="1"></textarea></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Documents Expiry<input type="date" name="expiry" /></label>
+                        <label>Attachments<input type="file" name="attachment" multiple /></label>
+                        <button type="submit" class="primary">Add Unit</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-units">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Serial</th>
+                            <th>Status</th>
+                            <th>Rate</th>
+                            <th>Expiry</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-drivers">
+                <div class="panel-header">
+                    <h2>Drivers</h2>
+                    <button class="secondary" data-export="drivers">Export</button>
+                </div>
+                <form class="form" id="form-driver">
+                    <div class="form-row">
+                        <label>Name<input type="text" name="name" required /></label>
+                        <label>License Number<input type="text" name="license" required /></label>
+                        <label>License Expiry<input type="date" name="expiry" required /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Phone<input type="tel" name="phone" /></label>
+                        <label>Notes<textarea name="notes" rows="1"></textarea></label>
+                        <button type="submit" class="primary">Add Driver</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-drivers">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>License</th>
+                            <th>Expiry</th>
+                            <th>Phone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-customers">
+                <div class="panel-header">
+                    <h2>Customers</h2>
+                    <button class="secondary" data-export="customers">Export</button>
+                </div>
+                <form class="form" id="form-customer">
+                    <div class="form-row">
+                        <label>Company<input type="text" name="name" required /></label>
+                        <label>Primary Contact<input type="text" name="contact" /></label>
+                        <label>Email<input type="email" name="email" /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Phone<input type="tel" name="phone" /></label>
+                        <label>Currency
+                            <select name="currency">
+                                <option value="KWD">KWD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="AED">AED</option>
+                            </select>
+                        </label>
+                        <button type="submit" class="primary">Add Customer</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-customers">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Currency</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-suppliers">
+                <div class="panel-header">
+                    <h2>Suppliers</h2>
+                    <button class="secondary" data-export="suppliers">Export</button>
+                </div>
+                <form class="form" id="form-supplier">
+                    <div class="form-row">
+                        <label>Company<input type="text" name="name" required /></label>
+                        <label>Contact<input type="text" name="contact" /></label>
+                        <label>Email<input type="email" name="email" /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Phone<input type="tel" name="phone" /></label>
+                        <label>Currency
+                            <select name="currency">
+                                <option value="KWD">KWD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="AED">AED</option>
+                            </select>
+                        </label>
+                        <button type="submit" class="primary">Add Supplier</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-suppliers">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Currency</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-rental-orders">
+                <div class="panel-header">
+                    <h2>Customer Rental Orders</h2>
+                    <button class="secondary" data-export="rentalOrders">Export</button>
+                </div>
+                <form class="form" id="form-rental-order">
+                    <div class="form-row">
+                        <label>Order #<input type="text" name="number" required /></label>
+                        <label>Customer<select name="customer" required></select></label>
+                        <label>Unit<select name="unit" required></select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Delivery Date<input type="date" name="start" required /></label>
+                        <label>Off-hire Date<input type="date" name="end" required /></label>
+                        <label>Rate Type
+                            <select name="rateType">
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Hourly">Hourly</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>Billing Basis<input type="number" name="billing" min="0" step="0.001" required /></label>
+                        <label>Extras<select name="extras" multiple>
+                                <option value="Standby">Standby</option>
+                                <option value="Overtime">Overtime</option>
+                                <option value="Mobilization">Mobilization</option>
+                                <option value="Demobilization">Demobilization</option>
+                            </select></label>
+                        <label>Status
+                            <select name="status">
+                                <option value="Draft">Draft</option>
+                                <option value="Active">Active</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>Tax %<input type="number" name="tax" step="0.01" min="0" value="0" /></label>
+                        <label>Currency<select name="currency">
+                                <option value="KWD">KWD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="AED">AED</option>
+                            </select></label>
+                        <button type="submit" class="primary">Create Order</button>
+                    </div>
+                    <div class="form-row">
+                        <label>Delivery Notes<textarea name="notes" rows="2"></textarea></label>
+                    </div>
+                </form>
+                <table class="data-table" id="table-rental-orders">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Unit</th>
+                            <th>Delivery</th>
+                            <th>Off-hire</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-hire-orders">
+                <div class="panel-header">
+                    <h2>Supplier Hire Orders</h2>
+                    <button class="secondary" data-export="hireOrders">Export</button>
+                </div>
+                <form class="form" id="form-hire-order">
+                    <div class="form-row">
+                        <label>Order #<input type="text" name="number" required /></label>
+                        <label>Supplier<select name="supplier" required></select></label>
+                        <label>Unit<select name="unit" required></select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Mobilization<input type="date" name="start" required /></label>
+                        <label>Demobilization<input type="date" name="end" required /></label>
+                        <label>Rate Type
+                            <select name="rateType">
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Hourly">Hourly</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>Rate<input type="number" name="rate" min="0" step="0.001" required /></label>
+                        <label>Status
+                            <select name="status">
+                                <option value="Draft">Draft</option>
+                                <option value="Active">Active</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </label>
+                        <label>Currency<select name="currency">
+                                <option value="KWD">KWD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="AED">AED</option>
+                            </select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Notes<textarea name="notes" rows="2"></textarea></label>
+                        <button type="submit" class="primary">Create Hire Order</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-hire-orders">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Supplier</th>
+                            <th>Unit</th>
+                            <th>Mobilization</th>
+                            <th>Demobilization</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-timesheets">
+                <div class="panel-header">
+                    <h2>Timesheets & Billing</h2>
+                    <button class="secondary" data-export="timesheets">Export</button>
+                </div>
+                <form class="form" id="form-timesheet">
+                    <div class="form-row">
+                        <label>Order<select name="order" required></select></label>
+                        <label>Driver<select name="driver"></select></label>
+                        <label>Date<input type="date" name="date" required /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Type
+                            <select name="type">
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Hourly">Hourly</option>
+                            </select>
+                        </label>
+                        <label>Hours/Days<input type="number" name="quantity" min="0" step="0.1" required /></label>
+                        <label>Extras<select name="extras" multiple>
+                                <option value="Standby">Standby</option>
+                                <option value="Overtime">Overtime</option>
+                            </select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Notes<textarea name="notes" rows="1"></textarea></label>
+                        <button type="submit" class="primary">Log Timesheet</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-timesheets">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Order</th>
+                            <th>Driver</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Extras</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-invoices">
+                <div class="panel-header">
+                    <h2>Customer Invoices & Receipts</h2>
+                    <button class="secondary" data-export="invoices">Export</button>
+                </div>
+                <form class="form" id="form-invoice">
+                    <div class="form-row">
+                        <label>Invoice #<input type="text" name="number" required /></label>
+                        <label>Customer<select name="customer" required></select></label>
+                        <label>Order<select name="order"></select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Issue Date<input type="date" name="date" required /></label>
+                        <label>Due Date<input type="date" name="due" required /></label>
+                        <label>Currency<select name="currency">
+                                <option value="KWD">KWD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="AED">AED</option>
+                            </select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Amount<input type="number" name="amount" min="0" step="0.001" required /></label>
+                        <label>Tax %<input type="number" name="tax" min="0" step="0.01" value="0" /></label>
+                        <label>Status
+                            <select name="status">
+                                <option value="Draft">Draft</option>
+                                <option value="Issued">Issued</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>Receipt Date<input type="date" name="receipt" /></label>
+                        <button type="submit" class="primary">Create Invoice</button>
+                        <button type="button" class="ghost" id="btn-generate-statement">Statement</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-invoices">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Customer</th>
+                            <th>Issue</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-bills">
+                <div class="panel-header">
+                    <h2>Supplier Bills & Payments</h2>
+                    <button class="secondary" data-export="bills">Export</button>
+                </div>
+                <form class="form" id="form-bill">
+                    <div class="form-row">
+                        <label>Bill #<input type="text" name="number" required /></label>
+                        <label>Supplier<select name="supplier" required></select></label>
+                        <label>Hire Order<select name="order"></select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Issue Date<input type="date" name="date" required /></label>
+                        <label>Due Date<input type="date" name="due" required /></label>
+                        <label>Currency<select name="currency">
+                                <option value="KWD">KWD</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="AED">AED</option>
+                            </select></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Amount<input type="number" name="amount" min="0" step="0.001" required /></label>
+                        <label>Status
+                            <select name="status">
+                                <option value="Draft">Draft</option>
+                                <option value="Issued">Issued</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </label>
+                        <label>Payment Date<input type="date" name="payment" /></label>
+                    </div>
+                    <div class="form-row">
+                        <button type="submit" class="primary">Create Bill</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-bills">
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Supplier</th>
+                            <th>Issue</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-rates">
+                <div class="panel-header">
+                    <h2>Rate Matrix</h2>
+                    <button class="secondary" data-export="rates">Export</button>
+                </div>
+                <form class="form" id="form-rate">
+                    <div class="form-row">
+                        <label>Category<input type="text" name="category" required /></label>
+                        <label>Rate Type
+                            <select name="type">
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Hourly">Hourly</option>
+                            </select>
+                        </label>
+                        <label>Base Rate (KWD)<input type="number" name="rate" min="0" step="0.001" required /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Standby<input type="number" name="standby" min="0" step="0.001" /></label>
+                        <label>Overtime<input type="number" name="overtime" min="0" step="0.001" /></label>
+                        <label>Mobilization<input type="number" name="mobilization" min="0" step="0.001" /></label>
+                        <label>Demobilization<input type="number" name="demobilization" min="0" step="0.001" /></label>
+                        <button type="submit" class="primary">Add Rate</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-rates">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Base</th>
+                            <th>Standby</th>
+                            <th>Overtime</th>
+                            <th>Mob</th>
+                            <th>Demob</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-documents">
+                <div class="panel-header">
+                    <h2>Documents & Attachments</h2>
+                </div>
+                <form class="form" id="form-attachment">
+                    <div class="form-row">
+                        <label>Related To
+                            <select name="entity">
+                                <option value="Unit">Unit</option>
+                                <option value="Driver">Driver</option>
+                                <option value="Rental Order">Rental Order</option>
+                                <option value="Hire Order">Hire Order</option>
+                                <option value="Invoice">Invoice</option>
+                                <option value="Bill">Bill</option>
+                            </select>
+                        </label>
+                        <label>Reference<input type="text" name="reference" placeholder="e.g. Unit Serial" required /></label>
+                        <label>Document<input type="file" name="file" required /></label>
+                    </div>
+                    <div class="form-row">
+                        <label>Expiry Date<input type="date" name="expiry" /></label>
+                        <label>Description<textarea name="description" rows="1"></textarea></label>
+                        <button type="submit" class="primary">Attach</button>
+                    </div>
+                </form>
+                <table class="data-table" id="table-attachments">
+                    <thead>
+                        <tr>
+                            <th>Entity</th>
+                            <th>Reference</th>
+                            <th>File</th>
+                            <th>Expiry</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-audit">
+                <h2>Audit Trail</h2>
+                <table class="data-table" id="table-audit">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>User Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="panel" id="panel-alerts">
+                <h2>Expiries & Overdue Alerts</h2>
+                <div class="card" id="alerts-container"></div>
+            </section>
+        </main>
     </div>
 
-
-    <!-- Hero Section -->
-    <header class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">Welcom to the ultimate rental solution platform</h1>
-            <ul>
-                <li>Construction equipment</li>
-                <li>Earth-moving equipments</li>
-                <li>Transport solution</li>
-                <li>Storage solution</li>
-            </ul>
+    <template id="row-actions-template">
+        <div class="row-actions">
+            <button class="ghost" data-action="edit"><i class="fa-solid fa-pen"></i></button>
+            <button class="ghost" data-action="delete"><i class="fa-solid fa-trash"></i></button>
+            <button class="ghost" data-action="pdf"><i class="fa-solid fa-file-pdf"></i></button>
         </div>
-        <button class="inquire"><a href="#">Inquire now</a></button>
-    </header>
+    </template>
 
-    <!-- Nav Bar -->
+    <template id="row-status-template">
+        <select data-status>
+            <option value="Draft">Draft</option>
+            <option value="Active">Active</option>
+            <option value="Closed">Closed</option>
+            <option value="Issued">Issued</option>
+            <option value="Paid">Paid</option>
+        </select>
+    </template>
 
-    <nav class="nav-bar">
-        <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Product</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
-        </ul>
-    </nav>
-
-    <div class="line"></div>
-    <!-- Side bar -->
-    <h3 class="right-sidebar">
-        <p>Lorem ipsum dolor sit amet.</p>
-    </h3>
-    <!-- introduction -->
-
-    <article class="intro">
-        <h2 class="intro-title">Introdcuction</h2>
-        <p class="intro-text">
-            Welcome to FlexiRental, your premier destination for all your rental equipment needs. We are a trusted and
-            reliable provider of high-quality equipment rentals, offering a wide range of tools and machinery to help
-            you tackle any project with ease and efficiency.
-            At FlexiRental, we understand that time is of the essence for our customers. That's why we have made it our
-            mission to make the rental process as seamless and convenient as possible. With just a few clicks or a quick
-            phone call, you can access a vast inventory of top-notch equipment ready to be delivered to your doorstep.
-        </p>
-        <img src="./images/rental2.jpeg" alt="Rental-Equipment" class="intro-image">
-        <p class="intro-text">
-            When you choose FlexiRental, you choose a partner dedicated to your success. We are committed to being your
-            trusted source for all your rental equipment needs, providing you with the tools you need to complete your
-            projects efficiently and effectively.
-        </p>
-        <button class="browse">
-            <p>Browse more</p>
-        </button>
+    <template id="alert-template">
+        <div class="alert-item">
+            <p class="alert-title"></p>
+            <p class="alert-date"></p>
         </div>
-    </article>
-    <!-- Our team -->
+    </template>
 
-    <section class="section-team">
-        <div class="team">
-            <h2 class="team-title">Our Team</h2>
-            <img src="./images/team.png" alt="Our Team" class="team-image">
-        </div>
-        <p class="team-text">
-            Our team of experienced professionals is dedicated to assisting you in finding the perfect rental
-            solution tailored to your specific requirements. Whether you are a contractor, a homeowner, or a
-            business owner, we have the right equipment to meet your needs, no matter the scale or complexity of
-            your project.
-        </p>
-        <div class="team-members">
-            <div class="team-staff">
-                <img src="./images/staff-icon.jpg" alt="Staff member" width="70%">
-                <div class="team-member">
-                    <p class="member-name">Abdul Aziz Khan</p>
-                    <p class="member-title">Operations Manager</p>
-                </div>
-            </div>
-            <div class="team-staff">
-                <img src="./images/staff-icon.jpg" alt="Staff member" width=70%">
-                <div class="team-member">
-                    <p class="member-name">Zaviyar Khan</p>
-                    <p class="member-title">Marketing Manager</p>
-                </div>
-            </div>
-            <div class="team-staff">
-                <img src="./images/staff-icon.jpg" alt="Staff member" width="70%">
-                <div class="team-member">
-                    <p class="member-name">FB Khan</p>
-                    <p class="member-title">General Manager</p>
-                </div>
-            </div>
-        </div>
-
-        <p class="pride">We take great pride in the quality and reliability of our equipment. Every item in our
-            inventory is
-            meticulously maintained and regularly inspected to ensure optimal performance and safety. We believe
-            that by providing you with top-of-the-line equipment, we empower you to achieve exceptional results.</p>
-    </section>
-
-    <!-- Contact us -->
-    <section class="contact">
-
-        <h2>Contact us</h2>
-        <div class="contact-info">
-            <p class="email"><a href="mailto:me@flexirentalq8.com"><i class="fa-solid fa-envelope"></i> me@flexirentalq8.com</a></p>
-            <p class="phone"><a href="tel:+1-123-4589-00"> <i class="fa-solid fa-phone"></i> 001-123-4589-00</a></p>
-
-        </div>
-        <form action="#" class="contact-us">
-            <div class="user-info">
-                    <label for="name"> <i class="fa-solid fa-user"></i> Name</label>
-                    <input type="text" name="name" id="name"><br>
-                    <label for="phoneNumber"> <i class="fa-solid fa-phone"></i> Phone Number</label>
-                    <input type="number" name="phoneNumber" id="phoneNumber"><br>
-            
-                    <label for="email"><i class="fa-solid fa-envelope"></i> Email</label>
-                    <input type="email" name="email" id="email"><br>
-                    <label for="company"><i class="fa-solid fa-building"></i></i> Company</label>
-                    <input type="company" name="company" id="company"><br>
-              
-                <label for="textarea" class="msg"><i class="fa-solid fa-comments"></i> Message</label><br>
-                <textarea name="textarea" id="textarea" cols="30" rows="10">Enter message here</textarea><br>
-            </div>
-            <button type="submit" class="btn-submit">Submit</button>
-        </form>
-    </section>
-
-
+    <script src="./script.js" defer></script>
 </body>
 
 </html>
