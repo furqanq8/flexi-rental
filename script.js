@@ -261,6 +261,13 @@ function bindForms() {
       createdAt: kuwaitNow().toISOString(),
     };
     order.total = calculateOrderTotal(order);
+      billing: Number(data.billing || 0),
+      tax: Number(data.tax || 0),
+      extras: data.extras || [],
+      status: data.status,
+      total: calculateOrderTotal(data),
+      createdAt: kuwaitNow().toISOString(),
+    };
     state.rentalOrders.push(order);
     if (order.status === 'Active') {
       setUnitStatus(order.unit, 'On-Rent');

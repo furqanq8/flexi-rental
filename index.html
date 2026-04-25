@@ -118,6 +118,11 @@
                         <thead>
                             <tr>
                                 <th>Unit Type</th>
+                    <h3>Utilization by Category</h3>
+                    <table class="data-table" id="table-utilization">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
                                 <th>Total</th>
                                 <th>On-Rent</th>
                                 <th>Utilization</th>
@@ -139,6 +144,7 @@
                     <div class="form-row">
                         <label>Unit Name<input type="text" name="name" required /></label>
                         <label>Unit Type<input type="text" name="category" required /></label>
+                        <label>Category<input type="text" name="category" required /></label>
                         <label>Serial<input type="text" name="serial" required /></label>
                     </div>
                     <div class="form-row">
@@ -162,6 +168,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Unit Type</th>
+                            <th>Category</th>
                             <th>Serial</th>
                             <th>Status</th>
                             <th>Rate</th>
@@ -312,6 +319,7 @@
                             </select>
                         </label>
                         <label>Billing Basis (Auto)<input type="number" name="billing" min="0" step="0.001" readonly required /></label>
+                        <label>Billing Basis<input type="number" name="billing" min="0" step="0.001" required /></label>
                         <label>Extras<select name="extras" multiple>
                                 <option value="Standby">Standby</option>
                                 <option value="Overtime">Overtime</option>
@@ -579,6 +587,7 @@
                 <form class="form" id="form-rate">
                     <div class="form-row">
                         <label>Unit Type<input type="text" name="category" required /></label>
+                        <label>Category<input type="text" name="category" required /></label>
                         <label>Rate Type
                             <select name="type">
                                 <option value="Daily">Daily</option>
@@ -601,6 +610,7 @@
                     <thead>
                         <tr>
                             <th>Unit Type</th>
+                            <th>Category</th>
                             <th>Type</th>
                             <th>Base</th>
                             <th>Standby</th>
