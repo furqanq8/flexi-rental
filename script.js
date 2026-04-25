@@ -253,6 +253,14 @@ function bindForms() {
       ...data,
       start: data.start,
       end: data.end,
+      billing: Number(getBillingFromRate(data.rateId) || 0),
+      tax: Number(data.tax || 0),
+      extras: data.extras || [],
+      status: data.status,
+      total: 0,
+      createdAt: kuwaitNow().toISOString(),
+    };
+    order.total = calculateOrderTotal(order);
       billing: Number(data.billing || 0),
       tax: Number(data.tax || 0),
       extras: data.extras || [],
@@ -269,6 +277,7 @@ function bindForms() {
     clearForm(formRentalOrder);
     renderRentalOrders();
     renderTimesheetOptions();
+    renderRentalRateOptions();
     updateDashboard();
   });
 
@@ -449,6 +458,11 @@ function findRateForOrder(order, timesheetType) {
   return state.rates.find(
     (rate) => rate.category === findUnit(order.unit)?.category && rate.type === timesheetType
   );
+}
+
+function getBillingFromRate(rateId) {
+  const rate = state.rates.find((item) => item.id === rateId);
+  return Number(rate?.rate || 0);
 }
 
 function calculateTimesheetAmount(order, data, rateInfo) {
@@ -940,6 +954,7 @@ function renderRates() {
     return tr;
   });
   renderTableRows('table-rates', rows);
+  renderRentalRateOptions();
 }
 
 function populateRateForm(rate) {
@@ -1133,6 +1148,7 @@ function renderUnitOptions() {
         .join('');
     select.value = current;
   });
+  renderRentalRateOptions();
 }
 
 function renderCustomerOptions() {
@@ -1274,6 +1290,40 @@ function renderUtilizationByCategory() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function renderRentalRateOptions() {
+  const form = document.getElementById('form-rental-order');
+  if (!form) return;
+  const unitId = form.querySelector('select[name="unit"]')?.value;
+  const rateType = form.querySelector('select[name="rateType"]')?.value;
+  const rateSelect = form.querySelector('select[name="rateId"]');
+  if (!rateSelect) return;
+  const current = rateSelect.value;
+  const unit = findUnit(unitId);
+  const filteredRates = state.rates.filter(
+    (rate) => rate.category === unit?.category && rate.type === rateType
+  );
+  rateSelect.innerHTML =
+    '<option value="">Select Rate</option>' +
+    filteredRates
+      .map(
+        (rate) =>
+          `<option value="${rate.id}">${rate.category} - ${rate.type} (${Number(rate.rate).toFixed(3)} KWD)</option>`
+      )
+      .join('');
+  rateSelect.value = filteredRates.some((rate) => rate.id === current) ? current : '';
+  syncRentalBillingBasis();
+}
+
+function syncRentalBillingBasis() {
+  const form = document.getElementById('form-rental-order');
+  if (!form) return;
+  const rateId = form.querySelector('select[name="rateId"]')?.value;
+  const billingInput = form.querySelector('input[name="billing"]');
+  if (!billingInput) return;
+  const amount = getBillingFromRate(rateId);
+  billingInput.value = amount ? amount.toFixed(3) : '';
 }
 
 function evaluateAlerts() {
@@ -1495,6 +1545,17 @@ function bindNavScroll() {
   });
 }
 
+function bindRentalRateSync() {
+  const form = document.getElementById('form-rental-order');
+  if (!form) return;
+  const unitSelect = form.querySelector('select[name="unit"]');
+  const typeSelect = form.querySelector('select[name="rateType"]');
+  const rateSelect = form.querySelector('select[name="rateId"]');
+  unitSelect?.addEventListener('change', renderRentalRateOptions);
+  typeSelect?.addEventListener('change', renderRentalRateOptions);
+  rateSelect?.addEventListener('change', syncRentalBillingBasis);
+}
+
 function bindEvents() {
   bindForms();
   handleNavigation();
@@ -1505,12 +1566,14 @@ function bindEvents() {
   bindRoleClassNames();
   toggleRolePermissions();
   bindNavScroll();
+  bindRentalRateSync();
   renderUnitOptions();
   renderCustomerOptions();
   renderSupplierOptions();
   renderDriverOptions();
   renderTimesheetOptions();
   renderBillOptions();
+  renderRentalRateOptions();
   setInterval(updateTime, 1000);
   updateTime();
   renderAll();

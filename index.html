@@ -113,6 +113,11 @@
                 </div>
 
                 <div class="card">
+                    <h3>Utilization by Unit Type</h3>
+                    <table class="data-table" id="table-utilization">
+                        <thead>
+                            <tr>
+                                <th>Unit Type</th>
                     <h3>Utilization by Category</h3>
                     <table class="data-table" id="table-utilization">
                         <thead>
@@ -138,6 +143,7 @@
                 <form class="form" id="form-unit">
                     <div class="form-row">
                         <label>Unit Name<input type="text" name="name" required /></label>
+                        <label>Unit Type<input type="text" name="category" required /></label>
                         <label>Category<input type="text" name="category" required /></label>
                         <label>Serial<input type="text" name="serial" required /></label>
                     </div>
@@ -161,6 +167,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th>Unit Type</th>
                             <th>Category</th>
                             <th>Serial</th>
                             <th>Status</th>
@@ -306,6 +313,12 @@
                         </label>
                     </div>
                     <div class="form-row">
+                        <label>Rate (from Rates)
+                            <select name="rateId" required>
+                                <option value="">Select Unit & Rate Type</option>
+                            </select>
+                        </label>
+                        <label>Billing Basis (Auto)<input type="number" name="billing" min="0" step="0.001" readonly required /></label>
                         <label>Billing Basis<input type="number" name="billing" min="0" step="0.001" required /></label>
                         <label>Extras<select name="extras" multiple>
                                 <option value="Standby">Standby</option>
@@ -573,6 +586,7 @@
                 </div>
                 <form class="form" id="form-rate">
                     <div class="form-row">
+                        <label>Unit Type<input type="text" name="category" required /></label>
                         <label>Category<input type="text" name="category" required /></label>
                         <label>Rate Type
                             <select name="type">
@@ -595,6 +609,7 @@
                 <table class="data-table" id="table-rates">
                     <thead>
                         <tr>
+                            <th>Unit Type</th>
                             <th>Category</th>
                             <th>Type</th>
                             <th>Base</th>
